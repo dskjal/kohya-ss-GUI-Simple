@@ -261,7 +261,7 @@
 
         ${headingUI("高 VRAM 向けの設定")}
         ${checkboxUI("highvram", "latent を VRAM にキャッシュ（highvram）", false)}
-        ${checkboxUI("no_half_vae", "32 ビットの VAE を使用（No-half VAE）", false)}
+        ${checkboxUI("no_half_vae", "32 ビットの VAE を使う（No-half VAE）", false)}
     `);
     /* disable_mmap_load_safetensors は WSL で SDXL のモデルロードを高速化する。 */
 
@@ -276,7 +276,7 @@
     `);
     setColumn("edit-material-col-2-div", `
         ${headingUI("Augumentation")}
-        ${checkboxUI("flip_aug", "反転画像を使用", false)}
+        ${checkboxUI("flip_aug", "反転画像を使う", false)}
         ${checkboxUI("color_aug", "画像の色をランダムに調整", false)}
         ${checkboxUI("random_crop", "画像をランダムにクロップ", false)}
     `);

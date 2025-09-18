@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kohya-ss GUI</title>
+</head>
+<link rel="stylesheet" href="style.css" type="text/css">
+
+<body>
+    <div id="header" style="display: flex; flex-wrap: wrap;">
+        <a href="#folders">フォルダとファイルの設定</a>
+        <a href="#basic-learning">基本的な学習設定</a>
+        <a href="#performance">パフォーマンス</a>
+        <a href="#materials">素材編集</a>
+        <a href="#loss-noise">損失とノイズ</a>
+    </div>
+
+    <div id="folders" class="jump-target"></div>
+    <details open><summary>フォルダとファイルの設定</summary>
+        <div id="kohya-ss-folder-div"></div>
+        <div id="output_dir-div"></div>
+        <div id="train_data_dir-div"></div>
+        <div id="pretrained_model_name_or_path-div"></div>
+    </details>
+
+    <div id="basic-learning" class="jump-target"></div>
+    <details open ><summary>基本的な学習設定</summary>
+        <div class="multi-column-div">
+            <div id="dataset-col-1-div" style="margin-right: auto;"></div>
+            <div id="dataset-col-2-div" style="margin-right: auto;"></div>
+            <div id="dataset-col-3-div" style="margin-right: auto;"></div>
+        </div>
+        <br/>
+        <div class="multi-column-div">
+            <div id="dataset-col-4-div" style="margin-right: auto;"></div>
+            <div id="dataset-col-5-div" style="margin-right: auto;"></div>
+            <div id="dataset-col-6-div" style="margin-right: auto;"></div>
+        </div>
+    </details>
+
+    <div id="performance" class="jump-target"></div>
+    <details open ><summary>パフォーマンス</summary>
+        <div class="multi-column-div">
+            <div id="performance-col-1-div" style="margin-right: auto;"></div>
+            <div id="performance-col-2-div" style="margin-right: auto;"></div>
+        </div>
+    </details>
+
+    <div id="materials" class="jump-target"></div>
+    <details open><summary>素材編集</summary>
+        <div class="multi-column-div">
+            <div id="edit-material-col-1-div" style="margin-right: auto;"></div>
+            <div id="edit-material-col-2-div" style="margin-right: auto;"></div>
+            <div id="edit-material-col-3-div" style="margin-right: auto;"></div>
+        </div>
+    </details>
+
+    <div id="loss-noise" class="jump-target"></div>
+    <details open><summary>損失とノイズ</summary>
+        <div class="multi-column-div">
+            <div id="loss-noise-col-1-div" style="margin-right: auto;"></div>
+            <div id="loss-noise-col-2-div" style="margin-right: auto;"></div>
+            <div id="loss-noise-col-3-div" style="margin-right: auto;"></div>
+        </div>
+    </details>
+
+    <details open><summary>コマンドライン</summary>
+        <textarea rows="20" id="commandline" style="width:100%; box-sizing: border-box; resize: none;" spellcheck="false"></textarea>
+        <button id="preview-command-line-button" class="tier-two-button">コマンドラインのプレビュー</button>
+    </details>
+
+    <div id="footer">
+        <button id="save-json" class="tier-two-button">設定の保存</button>
+        <button id="load-json" class="tier-two-button">設定の読み込み</button>
+        <button id="exec">学習開始</button>
+    </div>
+</body>
+</html>
+
+
+
+
+<script>
+    /* 
+        UI コンポーネント
+        json 作成時とコマンド作成時に name を使ってコンポーネントを取得するので、何らかの name を設定する。
+        json のキーに id を使うので id を適切に設定する。
+        json に保存される値はそれぞれ
+        - text と number は value
+        - checkbox は checked
+        - option は selected 
+
+    */
+    function generateEmbedData(commandName, value, evalStr){
+        return ` name="${commandName}" id="${commandName}" value="${value}" data-eval-str="${evalStr}" `;
+    }
+    /* 有効な type は "folder", "file", "trainFolder" */
+    function setupDialogDiv(id, text, type="folder", evalStr="x.value ? `--${x.name} '${x.value}' ` : ''"){
+        function generateFolderSelector(inputId, text, evalStr){
+            return `
+                <div class="input-block">
+                    <label for="${inputId}">${text}</label>
+                    <div class="input-block-border">
+                        <input type="text" class="dialog-input" ${generateEmbedData(inputId, "", evalStr)}>
+                        <button id="${inputId}-button">${type==="file"?"&#128196;":"&#x1f4c1;"}</button>
+                    </div>
+                </div>
+                `;
+        }
+        document.getElementById(`${id}-div`).innerHTML = generateFolderSelector(id, text, evalStr);
+        const dirButton = document.getElementById(`${id}-button`);
+        if (type==="folder"){
+            dirButton.addEventListener('click', async () => {
+                document.getElementById(id).value = await pywebview.api.selectFolder();
+            });
+        }
+        else if (type==="file"){
+            dirButton.addEventListener('click', async () => {
+                document.getElementById(id).value = await pywebview.api.selectFile();
+            });
+        }
+        else if(type==="trainFolder"){
+            dirButton.addEventListener('click', async () => {
+                document.getElementById(id).value = await pywebview.api.selectTrainDataDir();
+            });
+        }
+    }
+
+    function labelUI(id, label, remSize=1.0){
+        return `<label for="${id}" style="font-size: ${remSize}rem;">${label}</label>`;
+    }
+    function numberUI(id, label, value, remSize=1.0, min=0, evalStr="x.value ? `--${x.name} ${x.value} ` : ''"){
+        return `
+            <div class="input-block">
+                ${labelUI(id, label, remSize)}
+                <input type="number" min="${min}" ${generateEmbedData(id, value, evalStr)}>
+            </div>`;
+    }
+    function listboxUI(id, label, labelList, commandList, defaultIndex=0, remSize=1.0, evalStr="x.selected ? `${x.dataset.commandName} ` : ''"){
+        const defaultValue = labelList[defaultIndex];
+        let listHtml = "";
+        for (let i=0; i < labelList.length; ++i){
+            listHtml += `<option name=${commandList} data-command-name="${commandList[i]}" value="${labelList[i]}" id="${id}${i}" ${(labelList[i]===defaultValue)?"selected":""} data-eval-str="${evalStr}">${labelList[i]}</option>`;
+        }
+        return `
+            <div class="input-block">
+                ${labelUI(id, label, remSize)}
+                <select>${listHtml}</select>
+            </div>`;
+    }
+    function numberPlusListboxUI(id, label, value, list, commandList, defaultIndex=0, remSize=1.0){
+        const evalStr='x.selected ? `${x.dataset.commandName} ${document.getElementById(\''+id+'\').value} `  : \'\'';
+        let listHtml = "";
+        for (let i=0; i < list.length; ++i){
+            listHtml += `<option name="${id}${i}" value=${list[i]} id="${id}${i}" data-command-name="${commandList[i]}" data-eval-str="${evalStr}">${list[i]}</option>`;
+        }
+        return `
+            <div class="input-block">
+                <label for="${id}">${label}</label>
+                <div class="input-block-border">
+                    <input type="number" class="num-plus-list-input" ${generateEmbedData(id, value, "")}>
+                    <select name="${id}" style="width: 85px; border: none" >${listHtml}</select>
+                </div>
+            </div>
+        `;
+    }
+    function checkboxUI(id, label, isChecked=false, remSize=1.0, evalStr="x.checked ? `--${x.name} ` : ''"){
+        return `
+            <div style="margin: 5px 0">
+                <input type="checkbox" ${isChecked?"checked":""} ${generateEmbedData(id, "", evalStr)}>
+                ${labelUI(id, label, remSize)}
+            </div>`;
+    }
+    function headingUI(label){return `<h4>${label}</h4>`;}
+
+    function setColumn(id, data){
+        document.getElementById(id).innerHTML = `${data}`;
+    }
+
+    /* ファイル・フォルダの設定 */
+    setupDialogDiv("kohya-ss-folder", "sd-scripts フォルダ", "folder", ""); /* コマンドライン出力はなし */
+    setupDialogDiv("output_dir", "LoRA の出力フォルダ", "folder");
+    setupDialogDiv("train_data_dir", "データセットフォルダ", "trainFolder");
+    setupDialogDiv("pretrained_model_name_or_path", "学習元/事前学習モデル", "file")
+
+    /* 基本的な学習設定 */
+    setColumn("dataset-col-1-div",`
+        ${headingUI("モデルの設定")}
+        ${listboxUI("model-type", "モデルの種類", ["SD1", "SDXL", "FLUX.1", "SD3"], ["train_network.py", "sdxl_train_network.py", "flux_train_network.py", "sd3_train_network.py"], 1)}
+        ${numberUI("resolution", "解像度", 1024,1,64)}
+        ${headingUI("LoRA の設定")}
+        ${listboxUI("module-type", "モジュールの種類", ["LoRA", "LyCORIS", "DyLoRA", "LoRA-FA"], ["--network_module 'networks.lora'", "--network_module 'lycoris.kohya'", "--network_module 'networks.dylora'", "--network_module 'networks.lora_fa'"])}
+        ${numberUI("network_dim", "次元数（Rank）", 16,1,1)}
+        ${numberUI("network_alpha", "アルファ", 4.0)}
+    `);
+    
+    setColumn("dataset-col-2-div", `
+        ${headingUI("学習設定")}
+        ${listboxUI("optimizer_type", "オプティマイザ", ["AdamW8bit", "AdamW", "AdaFactor"], ["--optimizer_type 'AdamW8bit'", "--optimizer_type 'AdamW'", "--optimizer_type 'AdaFactor'"])}
+        ${numberPlusListboxUI("max_train", "エポック/ステップ", 3000, ["ステップ", "エポック"], ["--max_train_steps", "--max_train_epochs"])} 
+        ${numberUI("train_batch_size", "バッチサイズ", 1,1,1)}
+    `) 
+    setColumn("dataset-col-3-div", `
+        ${headingUI("学習率設定")}
+        ${numberUI("learning_rate", "学習率（LR）", 0.0001,1,0.00000001)}
+        ${listboxUI("scheduler_type", "LR スケジューラー", 
+            ["cosine_with_restarts", "cosine", "linear", "polynomial", "constant", "constant_with_warmup", "inverse_sqrt", "cosine_with_min_lr", "warmup_stable_decay"], 
+            ["--lr_scheduler 'cosine_with_restarts'", "--lr_scheduler 'cosine'", "--lr_scheduler 'linear'", "--lr_scheduler 'polynomial'", "--lr_scheduler 'constant'", "--lr_scheduler 'constant_with_warmup'", "--lr_scheduler 'inverse_sqrt'", "--lr_scheduler 'cosine_with_min_lr'", "--lr_scheduler 'warmup_stable_decay'"])}
+        ${numberUI("lr_scheduler_num_cycles", "LR スケジューラのサイクル/<br/>polynomial の減衰", 4, 0.7)}
+        ${numberUI("lr_warmup_steps", "LRウォームアップ<br/>ステップ数/比率", 0.0, 0.7)}
+    `)
+    setColumn("dataset-col-4-div", `
+        ${headingUI("畳み込み層")}
+        ${checkboxUI("learn_conv", "畳み込み層も学習する", true)}
+        ${numberUI("conv_dim", "Conv Dim", 16, 1, 1, "x.value ? `\'${x.name}=${x.value}\' ` : ''")}
+        ${numberUI("conv_alpha", "Conv Alpha", 4, 1, 0.000001, "x.value ? `\'${x.name}=${x.value}\' ` : ''")}
+    `)
+    setColumn("dataset-col-5-div", `
+        ${headingUI("Text Encoder")}
+        ${checkboxUI("learn-te", "Text Encoder も学習する", false, 1.0, "x.checked ? '' : '--network_train_unet_only '")}
+        ${numberUI("text_encoder_lr", "Text Encoder 学習率", "")}
+        ${headingUI("キャプション設定")}
+        ${checkboxUI("shuffle_caption", "キャプションのシャッフル", false)}
+        ${numberUI("keep_tokens", "シャッフルしない単語数", 0)}
+    `)
+    setColumn("dataset-col-6-div", `
+        ${headingUI("保存設定")}
+        ${numberPlusListboxUI("save_every_n", "保存頻度", 1000, ["ステップ", "エポック"], ["--save_every_n_steps", "--save_every_n_epochs"])}
+        ${listboxUI("save_precision", "保存するモデルの精度", ["fp16", "bf16", "float"], ["--save_precision 'fp16'", "--save_precision 'bf16'", "--save_precision 'float'"])}
+    `)
+
+    setColumn("performance-col-1-div", `
+        ${headingUI("VRAM 節約＆計算高速化")}
+        ${listboxUI("cross-attention-optimization", "Cross-Attention の最適化", 
+            ["xformers", "mem_eff_attn", "sdpa", "なし"], 
+            ["--xformers", "--mem_eff_attn", "--sdpa", ""])}
+        ${listboxUI("mixed-precision", "混合精度", 
+            ["なし", "fp16", "bf16"], 
+            ["", "--mixed_precision 'fp16'", "--mixed_precision 'bf16'"], 1)}
+
+        ${headingUI("VRAM 節約設定")}
+        ${checkboxUI("fp8_base", "モデルを fp8 で読み込む", true)}
+        ${checkboxUI("gradient_checkpointing", "Gradient checkpointing", true)}
+        ${checkboxUI("cache_latents", "latent のキャッシュ", true)}
+        ${checkboxUI("cache_latents_to_disk", "latent をディスクにキャッシュ", true)}
+        ${checkboxUI("cache_text_encoder_outputs", "Text Encoder の出力をキャッシュ", true, 0.9)}
+        ${checkboxUI("cache_text_encoder_outputs_to_disk", "Text Encoder の出力をディスクにキャッシュ", true, 0.9)}
+    `);
+    setColumn("performance-col-2-div", `
+        ${headingUI("ロードの高速化と並列処理")}
+        ${numberUI("num_cpu_threads_per_process", "CPU スレッド数", 1,1,1)}
+        ${numberUI("max_data_loader_n_workers", "データローダの CPU スレッド数", 1, 0.8,1)}
+        
+        ${checkboxUI("persistent_data_loader_workers", "教師画像の読み込みの高速化", true)}
+        ${checkboxUI("disable_mmap_load_safetensors", "safetensors 読み込みのメモリマッピングの無効化", true, 0.9)}
+
+        ${headingUI("学習安定化")}
+        ${numberUI("gradient_accumulation_steps", "gradient accumulation<br/>steps", 1, 0.8, 1)}
+
+        ${headingUI("高 VRAM 向けの設定")}
+        ${checkboxUI("highvram", "latent を VRAM にキャッシュ（highvram）", false)}
+        ${checkboxUI("no_half_vae", "32 ビットの VAE を使用（No-half VAE）", false)}
+    `);
+    /* disable_mmap_load_safetensors は WSL で SDXL のモデルロードを高速化する。 */
+
+    setColumn("edit-material-col-1-div", `
+        ${headingUI("Aspect Ratio Bucketing")}
+        ${numberUI("min_bucket_reso", "最小バケット解像度", 256, 1, 64)}
+        ${numberUI("max_bucket_reso", "最大バケット解像度", 1024, 1, 512)}
+        ${listboxUI("resize-method", "画像のリサイズ方法", 
+            ["未指定（area）", "bicubic", "bilinear", "nearest", "lanczos"], 
+            ["", "--resize_interpolation 'bicubic'", "--resize_interpolation 'bilinear'", "--resize_interpolation 'nearest'", "--resize_interpolation 'lanczos'"])}
+        ${checkboxUI("bucket_no_upscale", "画像を拡大しない", true)}
+    `);
+    setColumn("edit-material-col-2-div", `
+        ${headingUI("Augumentation")}
+        ${checkboxUI("flip_aug", "反転画像を使用", false)}
+        ${checkboxUI("color_aug", "画像の色をランダムに調整", false)}
+        ${checkboxUI("random_crop", "画像をランダムにクロップ", false)}
+    `);
+    setColumn("edit-material-col-3-div", `
+        ${headingUI("マスクの設定")}
+        ${checkboxUI("masked_loss", "マスク画像を使う", false)}
+        ${checkboxUI("alpha_mask", "画像のマスクにアルファを使う", false)}
+    `);
+
+    setColumn("loss-noise-col-1-div", `
+        ${listboxUI("loss-method", "損失関数の種類", 
+            ["L2（デフォルト）", "huber", "smooth_l1"], 
+            ["--loss_type 'l2'", "--loss_type 'huber'", "--loss_type 'smooth_l1'"])}
+        ${listboxUI("huber_schedule", "huber のスケジューラー", 
+            ["snr", "exponential", "constant"], 
+            ["--huber_schedule 'snr'", "--huber_schedule 'exponential'", "--huber_schedule 'constant'"])}
+        ${numberUI("huber_c", "huber_c", 0.1)}
+        `);
+    setColumn("loss-noise-col-2-div", `
+        ${checkboxUI("debiased_estimation", "Debiased Estimation", true)}
+
+        ${headingUI("v-pred 設定")}
+        ${checkboxUI("v_parameterization", "v-parameterization", false)}
+        ${checkboxUI("zero_terminal_snr", "Zero Terminal SNR", false)}
+    `);
+
+    /*
+        コマンドの生成
+    */
+    function generateCommand(){
+        /* 引数のリストを作成して加工 */
+        let args = Array.from(document.querySelectorAll('[name]')).
+            filter(x => (x.type != 'number') || (x.type==='number' && x.value != "0")).     /* 数値が 0 のオプションを削除 */
+            filter(x => x.dataset.evalStr && eval(x.dataset.evalStr)).  /* 空項目のオプションを削除 */
+            map(x => String(eval(x.dataset.evalStr)));
+
+        /* arr から target を含む要素を抜き出し、見つけた値と値を削除した arr を返す。見つからなかった場合、戻り値は null、arr は元のものを返す。 */
+        function findAndExtract(arr, target){
+            const i = arr.findIndex(y => y.includes(target));
+            if (i === -1){ return [null, arr];}
+            const val = arr[i];
+            arr.splice(i, 1);
+            return [val, arr];
+        }
+
+        /* 順番は  accelerate launch --num_cpu_threads_per_process 1 *_train_network.py ...引数  */
+        [numCpuThreadsPerProcess, args] = findAndExtract(args, "--num_cpu_threads_per_process");
+        [trainNetwork, args] = findAndExtract(args, "train_network.py");
+        const commandlineHeader = `accelerate launch ${numCpuThreadsPerProcess}${trainNetwork}--enable_bucket --save_model_as \"safetensors\" --caption_extension \".txt\" `;
+
+        /* huber check  */
+        const i = args.findIndex(x => x === "--loss_type 'huber' ");
+        if (i === -1){
+            /* huber 設定の削除 */
+            args = args.filter(x => !x.includes("huber_"));
+        }
+
+        /* 畳み込み学習 */
+        [dim, args] = findAndExtract(args, "conv_dim");
+        [alpha, args] = findAndExtract(args, "conv_alpha");
+        [val, args] = findAndExtract(args, "learn_conv");
+        convCommand = (val != null) ? `--network_args ${dim}${alpha}` : "";
+
+        return (commandlineHeader + 
+            args.join('') + 
+            convCommand).replaceAll("'", '"');
+    }
+
+    document.getElementById("preview-command-line-button").onclick = () => {
+        document.getElementById("commandline").innerHTML = generateCommand();
+    };
+
+    document.getElementById("save-json").onclick = async () => {
+        let jsonObject = {};
+        document.querySelectorAll('[name]').forEach(x => {
+            if (x.type === "text" || x.type === "number"){
+                jsonObject[x.id] = x.value;
+            }
+            else if(x.type === "checkbox"){
+                jsonObject[x.id] = x.checked;
+            }
+            else if(x.tagName === "OPTION"){
+                jsonObject[x.id] = x.selected;
+            }
+        });
+        await pywebview.api.save_settings(jsonObject);
+    };
+    document.getElementById("load-json").onclick = async () => {
+        const res = await pywebview.api.load_settings();
+        const jsonObject = JSON.parse(res);
+        document.querySelectorAll('[name]').forEach(x => {
+            if (x.type === "text" || x.type === "number"){
+                if (x.id in jsonObject){
+                    x.value = jsonObject[x.id];
+                }
+            }
+            else if(x.type === "checkbox"){
+                if (x.id in jsonObject){
+                    x.checked = jsonObject[x.id];
+                }
+            }
+            else if(x.tagName === "OPTION"){
+                if (x.id in jsonObject){
+                    x.selected = jsonObject[x.id];
+                }
+            }
+        });
+    };
+    let gIntervalID = -1;
+    document.getElementById("exec").onclick = async () => {
+        if (await pywebview.api.isLearning()){
+            window.alert("ほかの学習が実行中です。")
+            return;
+        }
+
+        const res = await pywebview.api.exec(generateCommand(), document.getElementById("kohya-ss-folder").value);
+        document.getElementById("exec").innerHTML = "学習中…";
+
+        gIntervalID = setInterval(async () =>{
+            const isBusy = await pywebview.api.isLearning();
+            if (!isBusy){
+                document.getElementById("exec").innerHTML = "学習開始";
+                clearInterval(gIntervalID);
+            }
+        }, 2000)
+    };
+</script>

@@ -1,0 +1,157 @@
+:root {
+    --background-color: hsl(0 0 99%);
+    --border-radius-px: 6px;
+    --border-width-px: 1px;
+    --border-color: hsl(0 0 80%);
+    --font-color: hsl(0 0 20%);
+    --border-radius-left-only: var(--border-radius-px) 0px 0px var(--border-radius-px);
+    --border-radius-right-only: 0px var(--border-radius-px) var(--border-radius-px) 0px;
+    --input-block-padding-left: 6px;
+    --input-block-width-px: 250px;
+    --label-minus-offset-px: -13px;
+    --base-color: #4798ee;
+    --page-width-px: 800px;
+}
+body {
+    background-color: var(--background-color);
+    max-width: var(--page-width-px);
+    padding: 0px 10px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+    padding-bottom: 1000px;
+    color: var(--font-color);
+    position: relative;
+}
+h4 {
+    margin-bottom: 0.5em;
+}
+details {
+    margin-top: 30px;
+    border: solid;
+    border-width: var(--border-width-px);
+    border-radius: var(--border-radius-px);
+    padding: 4px;
+}
+
+input[type=checkbox] {
+    transform: scale(1.5);
+    accent-color: var(--base-color);
+}
+input:out-of-range {
+    border: 4px solid red !important;
+    outline-color: red;
+    /* background-color: rgba(255, 0, 0, 0.25) !important; */
+}
+input, select{
+    font-size: 1em;
+    color: var(--font-color);
+}
+
+button {
+    background-color: var(--base-color);
+    border: none;
+    color: aliceblue;
+    border-radius: var(--border-radius-px);
+    padding: 6px 12px;
+    margin: 6px 0px;
+}
+.multi-column-div {
+    display: flex; 
+    justify-content: center; 
+    flex-wrap: wrap;
+}
+
+.input-block {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-top: 20px;
+    max-width: var(--input-block-width-px);
+}
+.input-block label {
+    position: absolute; 
+    top: var(--label-minus-offset-px); 
+    left: var(--input-block-padding-left);
+    background-color: var(--background-color);
+}
+.input-block input, select{
+    border: solid;
+    border-radius: var(--border-radius-px);
+    border-width: var(--border-width-px);
+    border-color: var(--border-color);
+    margin-right: 0px;
+    padding-top: 17px;
+    text-align: right;
+    background: transparent;
+}
+.input-block-border {
+    display: flex; 
+    border: solid;
+    border-radius: var(--border-radius-px);
+    border-width: var(--border-width-px);
+    border-color: var(--border-color);
+    margin-right: auto;
+}
+.input-block-border .dialog-input {
+    min-width: var(--input-block-width-px);
+    max-width:700px;
+    field-sizing: content;
+    border: none;
+    padding-left: var(--input-block-padding-left);
+    text-align: left;
+    font-size: 0.8em;
+}
+.input-block-border .num-plus-list-input {
+    width: calc(var(--input-block-width-px) - 90px); 
+    border: none;
+    background: transparent;
+}
+.input-block-border button {
+    padding-top: 17px;
+    margin: 0px;
+    background: transparent;
+    border: none;
+}
+
+#header {
+    background-color: var(--background-color);
+    position: fixed; /* 画面に固定 */
+    max-width: 97%;
+    width: 100%;
+    top: 0;       /* 最下部に配置 */
+    width: var(--page-width-px);     /* 画面幅いっぱいに表示 */
+    padding: 10px 0px;
+    z-index: 10;
+}
+#header a {
+    margin-right: auto;
+    padding-top: 10px;
+}
+.jump-target {
+    padding-top: 25px;
+    margin-top: -25px;
+}
+#footer {
+    background-color: var(--background-color);
+    position: fixed; /* 画面に固定 */
+    max-width: var(--page-width-px);
+    width: 97%;
+    bottom: 0;       /* 最下部に配置 */
+    padding: 10px 0px;
+    z-index: 10;
+    display: flex;
+}
+.tier-two-button {
+    background-color: var(--background-color);
+    color: var(--base-color);
+    border: 1px solid var(--base-color);
+}
+#load-json {
+    margin-left: 4px;
+}
+#exec {
+    margin-left: auto;
+    font-size: 1.5em;
+    padding-bottom: 9px;
+}

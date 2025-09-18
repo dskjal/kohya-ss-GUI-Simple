@@ -346,7 +346,7 @@
     }
 
     document.getElementById("preview-command-line-button").onclick = () => {
-        document.getElementById("commandline").innerHTML = generateCommand();
+        document.getElementById("commandline").value = generateCommand();
     };
 
     document.getElementById("save-json").onclick = async () => {

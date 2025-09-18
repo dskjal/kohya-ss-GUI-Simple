@@ -12,7 +12,7 @@ class Api:
         subprocess.run("test.cmd")
         
     def save_settings(self, dictionary):
-        filepath = window.create_file_dialog(webview.FileDialog.SAVE, directory='./saved_settings', save_filename='.json', allow_multiple=False)
+        filepath = window.create_file_dialog(webview.FileDialog.SAVE, directory='./', save_filename='.json', allow_multiple=False)
         if filepath:
             with open(filepath[0], "w", encoding="utf-8") as f:
                 json.dump(dictionary, f, ensure_ascii=False, indent=4)

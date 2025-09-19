@@ -13,7 +13,7 @@
         <a href="#folders">フォルダとファイルの設定</a>
         <a href="#basic-learning">基本的な学習設定</a>
         <a href="#performance">パフォーマンス</a>
-        <a href="#materials">素材編集</a>
+        <a href="#materials">データセット</a>
         <a href="#loss-noise">損失とノイズ</a>
     </div>
 
@@ -49,7 +49,7 @@
     </details>
 
     <div id="materials" class="jump-target"></div>
-    <details open><summary>素材編集</summary>
+    <details open><summary>データセット</summary>
         <div class="multi-column-div">
             <div id="edit-material-col-1-div" style="margin-right: auto;"></div>
             <div id="edit-material-col-2-div" style="margin-right: auto;"></div>
@@ -221,9 +221,6 @@
         ${headingUI("Text Encoder")}
         ${checkboxUI("learn-te", "Text Encoder も学習する", false, 1.0, "x.checked ? '' : '--network_train_unet_only '")}
         ${numberUI("text_encoder_lr", "Text Encoder 学習率", "")}
-        ${headingUI("キャプション設定")}
-        ${checkboxUI("shuffle_caption", "キャプションのシャッフル", false)}
-        ${numberUI("keep_tokens", "シャッフルしない単語数", 0)}
     `)
     setColumn("dataset-col-6-div", `
         ${headingUI("保存設定")}
@@ -279,11 +276,15 @@
         ${checkboxUI("flip_aug", "反転画像を使う", false)}
         ${checkboxUI("color_aug", "画像の色をランダムに調整", false)}
         ${checkboxUI("random_crop", "画像をランダムにクロップ", false)}
-    `);
-    setColumn("edit-material-col-3-div", `
+
         ${headingUI("マスクの設定")}
         ${checkboxUI("masked_loss", "マスク画像を使う", false)}
         ${checkboxUI("alpha_mask", "画像のマスクにアルファを使う", false)}
+    `);
+    setColumn("edit-material-col-3-div", `
+        ${headingUI("キャプション設定")}
+        ${checkboxUI("shuffle_caption", "キャプションのシャッフル", false)}
+        ${numberUI("keep_tokens", "シャッフルしない単語数", 0)}
     `);
 
     setColumn("loss-noise-col-1-div", `

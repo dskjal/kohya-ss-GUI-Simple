@@ -235,7 +235,7 @@
         ${headingUI("VRAM 節約＆計算高速化")}
         ${listboxUI("cross-attention-optimization", "Cross-Attention の最適化", 
             ["xformers", "mem_eff_attn", "scaled dot product attention", "なし"], 
-            ["--xformers", "--mem_eff_attn", "--sdpa", ""])}
+            ["--xformers", "--mem_eff_attn", "--sdpa", ""],2)}
         ${listboxUI("mixed-precision", "混合精度", 
             ["なし", "fp16", "bf16"], 
             ["", "--mixed_precision 'fp16'", "--mixed_precision 'bf16'"], 1)}

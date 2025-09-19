@@ -234,7 +234,7 @@
     setColumn("performance-col-1-div", `
         ${headingUI("VRAM 節約＆計算高速化")}
         ${listboxUI("cross-attention-optimization", "Cross-Attention の最適化", 
-            ["xformers", "mem_eff_attn", "sdpa", "なし"], 
+            ["xformers", "mem_eff_attn", "scaled dot product attention", "なし"], 
             ["--xformers", "--mem_eff_attn", "--sdpa", ""])}
         ${listboxUI("mixed-precision", "混合精度", 
             ["なし", "fp16", "bf16"], 

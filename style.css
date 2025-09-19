@@ -23,12 +23,16 @@ body {
     color: var(--font-color);
     position: relative;
 }
+a {
+    color: var(--base-color);
+}
 h4 {
     margin-bottom: 0.5em;
 }
 details {
     margin-top: 30px;
     border: solid;
+    border-color: var(--base-color);
     border-width: var(--border-width-px);
     border-radius: var(--border-radius-px);
     padding: 4px;

@@ -173,7 +173,7 @@
                 ${labelUI(id, label, remSize)}
             </div>`;
     }
-    function headingUI(label){return `<h4>${label}</h4>`;}
+    function headingUI(label, margin_top=1.5){return `<h4 style="margin-top: ${margin_top}em;">${label}</h4>`;}
 
     function setColumn(id, data){
         document.getElementById(id).innerHTML = `${data}`;
@@ -288,17 +288,12 @@
 
     setColumn("loss-noise-col-1-div", `
         ${listboxUI("loss-method", "損失関数の種類", 
-            ["L2（デフォルト）", "huber", "smooth_l1"], 
-            ["--loss_type 'l2'", "--loss_type 'huber'", "--loss_type 'smooth_l1'"])}
-        ${listboxUI("huber_schedule", "huber のスケジューラー", 
-            ["snr", "exponential", "constant"], 
-            ["--huber_schedule 'snr'", "--huber_schedule 'exponential'", "--huber_schedule 'constant'"])}
-        ${numberUI("huber_c", "huber_c", 0.1)}
+            ["L2（デフォルト）", "smooth_l1"], 
+            ["--loss_type 'l2'", "--loss_type 'smooth_l1'"])}
+            ${checkboxUI("debiased_estimation", "Debiased Estimation", true)}
         `);
     setColumn("loss-noise-col-2-div", `
-        ${checkboxUI("debiased_estimation", "Debiased Estimation", true)}
-
-        ${headingUI("v-pred 設定")}
+        ${headingUI("v-pred 設定", 0)}
         ${checkboxUI("v_parameterization", "v-parameterization", false)}
         ${checkboxUI("zero_terminal_snr", "Zero Terminal SNR", false)}
     `);
@@ -326,13 +321,6 @@
         [numCpuThreadsPerProcess, args] = findAndExtract(args, "--num_cpu_threads_per_process");
         [trainNetwork, args] = findAndExtract(args, "train_network.py");
         const commandlineHeader = `accelerate launch ${numCpuThreadsPerProcess}${trainNetwork}--enable_bucket --save_model_as \"safetensors\" --caption_extension \".txt\" `;
-
-        /* huber check  */
-        const i = args.findIndex(x => x === "--loss_type 'huber' ");
-        if (i === -1){
-            /* huber 設定の削除 */
-            args = args.filter(x => !x.includes("huber_"));
-        }
 
         /* 畳み込み学習 */
         [dim, args] = findAndExtract(args, "conv_dim");

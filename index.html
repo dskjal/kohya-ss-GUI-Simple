@@ -305,7 +305,7 @@
         /* 引数のリストを作成して加工 */
         let args = Array.from(document.querySelectorAll('[name]')).
             filter(x => (x.type != 'number') || (x.type==='number' && x.value != "0")).     /* 数値が 0 のオプションを削除 */
-            filter(x => x.dataset.evalStr && eval(x.dataset.evalStr)).  /* 空項目のオプションを削除 */
+            filter(x => x.dataset.evalStr && eval(x.dataset.evalStr) && !String(eval(x.dataset.evalStr)).includes(" 0 ")).  /* 空項目のオプションを削除 */
             map(x => String(eval(x.dataset.evalStr)));
 
         /* arr から target を含む要素を抜き出し、見つけた値と値を削除した arr を返す。見つからなかった場合、戻り値は null、arr は元のものを返す。 */

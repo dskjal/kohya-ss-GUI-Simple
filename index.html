@@ -186,12 +186,12 @@
     setupDialogDiv("pretrained_model_name_or_path", "学習元/事前学習モデル", "file")
 
     /* 基本的な学習設定 */
+    /*${listboxUI("module-type", "モジュールの種類", ["LoRA", "LyCORIS", "DyLoRA", "LoRA-FA"], ["--network_module 'networks.lora'", "--network_module 'lycoris.kohya'", "--network_module 'networks.dylora'", "--network_module 'networks.lora_fa'"])}*/
     setColumn("dataset-col-1-div",`
         ${headingUI("モデルの設定")}
         ${listboxUI("model-type", "モデルの種類", ["SD1", "SDXL", "FLUX.1", "SD3"], ["train_network.py", "sdxl_train_network.py", "flux_train_network.py", "sd3_train_network.py"], 1)}
         ${numberUI("resolution", "解像度", 1024,1,64)}
         ${headingUI("LoRA の設定")}
-        ${listboxUI("module-type", "モジュールの種類", ["LoRA", "LyCORIS", "DyLoRA", "LoRA-FA"], ["--network_module 'networks.lora'", "--network_module 'lycoris.kohya'", "--network_module 'networks.dylora'", "--network_module 'networks.lora_fa'"])}
         ${numberUI("network_dim", "次元数（Rank）", 16,1,1)}
         ${numberUI("network_alpha", "アルファ", 4.0)}
     `);
@@ -320,7 +320,7 @@
         /* 順番は  accelerate launch --num_cpu_threads_per_process 1 *_train_network.py ...引数  */
         [numCpuThreadsPerProcess, args] = findAndExtract(args, "--num_cpu_threads_per_process");
         [trainNetwork, args] = findAndExtract(args, "train_network.py");
-        const commandlineHeader = `accelerate launch ${numCpuThreadsPerProcess}${trainNetwork}--enable_bucket --save_model_as \"safetensors\" --caption_extension \".txt\" `;
+        const commandlineHeader = `accelerate launch ${numCpuThreadsPerProcess}${trainNetwork}--enable_bucket --save_model_as \"safetensors\" --caption_extension \".txt\" --network_module \"networks.lora\" `;
 
         /* 畳み込み学習 */
         [dim, args] = findAndExtract(args, "conv_dim");

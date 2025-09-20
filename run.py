@@ -66,6 +66,8 @@ class Api:
                 else:
                     f.write(f'{content}, {tag}')
 
+        return f'{len(text_files)} 個のファイルが変更されました'
+
     def moveTag(self, folder:str, tag:str, isHead:bool=True):
         '''
             Args:
@@ -76,6 +78,7 @@ class Api:
         if not text_files:
             return "フォルダが存在しないか、フォルダ内に .txt ファイルがありません"
         
+        processed_file_count = 0
         for file in text_files:
             with open(file, mode="r+", encoding="utf-8") as f:
                 content = f.read()
@@ -83,6 +86,9 @@ class Api:
 
                 # タグの移動
                 tags = [t.strip() for t in content.split(',')]
+                if tag in tags:
+                    processed_file_count += 1
+
                 tags.remove(tag)
                 content = ', '.join(tags)
 
@@ -91,6 +97,22 @@ class Api:
                     f.write(f'{tag}, {content}')
                 else:
                     f.write(f'{content}, {tag}')
+
+        return f"{processed_file_count} 個のファイルが変更されました"
+        
+    def replaceUnderscoreToSpace(self, folder:str):
+        text_files = self.get_caption_files(folder)
+        if not text_files:
+            return "フォルダが存在しないか、フォルダ内に .txt ファイルがありません"
+        
+        for file in text_files:
+            with open(file, mode="r+", encoding="utf-8") as f:
+                content = f.read().replace('_', ' ')
+                f.seek(0)
+                f.write(content)
+
+        return f'{len(text_files)} 個のファイルが変更されました'
+
 
     def isLearning(self):
         return self.process and self.process.poll() is None

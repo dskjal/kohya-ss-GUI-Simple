@@ -317,11 +317,14 @@
         ${headingUI("タグの移動")}
         ${buttonUI("move-caption-to-head", "タグを先頭に移動")}
     `);
-        setColumn("edit-material-col-5-div", `
+    setColumn("edit-material-col-5-div", `
         ${headingUI("タグの追加")}
         ${buttonUI("add-caption-to-head", "タグを先頭に追加")}
     `);
-
+    setColumn("edit-material-col-6-div", `
+        ${headingUI("タグの置き換え")}
+        ${buttonUI("replace-underscore", "'_' をすべて半角スペースに変換")}
+    `);
 
     setColumn("loss-noise-col-1-div", `
         ${listboxUI("loss-method", "損失関数の種類", 
@@ -422,6 +425,14 @@
         const folder = document.getElementById('caption-folder').value;
         const tag = document.getElementById('tag-to-edit').value;
         const res = await pywebview.api.addTag(folder, tag, true);
+        if (res) {
+            window.alert(res);
+        }
+    };
+    document.getElementById("replace-underscore").onclick = async () => {
+        const folder = document.getElementById('caption-folder').value;
+        const tag = document.getElementById('tag-to-edit').value;
+        const res = await pywebview.api.replaceUnderscoreToSpace(folder);
         if (res) {
             window.alert(res);
         }

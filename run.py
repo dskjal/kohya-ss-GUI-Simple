@@ -11,7 +11,7 @@ class Api:
     def run_test(self):
         subprocess.run("test.cmd")
         
-    def save_settings(self, dictionary):
+    def save_settings(self, dictionary:str):
         filepath = window.create_file_dialog(webview.FileDialog.SAVE, directory='./', save_filename='.json', allow_multiple=False)
         if filepath:
             with open(filepath[0], "w", encoding="utf-8") as f:
@@ -41,11 +41,61 @@ class Api:
 
     def selectFile(self):
         return window.create_file_dialog(webview.FileDialog.OPEN, allow_multiple=False)
+    
+    def get_caption_files(self, folder:str):
+        if os.path.isdir(folder):
+            return [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith(".txt") and os.path.isfile(os.path.join(folder, f))]
+        return []
+    
+    def addTag(self, folder:str, tag:str, isHead:bool=True):
+        '''
+            Args:
+                folder(str) : キャプションファイルのあるフォルダ。
+                isHead(bool) : True=トリガーワードを先頭に挿入。False=トリガーワードを末尾に挿入
+        '''
+        text_files = self.get_caption_files(folder)
+        if not text_files:
+            return "フォルダが存在しないか、フォルダ内に .txt ファイルがありません"
+        
+        for file in text_files:
+            with open(file, mode="r+", encoding="utf-8") as f:
+                content = f.read()
+                f.seek(0)
+                if isHead:
+                    f.write(f'{tag}, {content}')
+                else:
+                    f.write(f'{content}, {tag}')
+
+    def moveTag(self, folder:str, tag:str, isHead:bool=True):
+        '''
+            Args:
+                folder(str) : キャプションファイルのあるフォルダ。
+                isHead(bool) : True=トリガーワードを先頭に移動。False=トリガーワードを末尾に移動
+        '''
+        text_files = self.get_caption_files(folder)
+        if not text_files:
+            return "フォルダが存在しないか、フォルダ内に .txt ファイルがありません"
+        
+        for file in text_files:
+            with open(file, mode="r+", encoding="utf-8") as f:
+                content = f.read()
+                f.seek(0)
+
+                # タグの移動
+                tags = [t.strip() for t in content.split(',')]
+                tags.remove(tag)
+                content = ', '.join(tags)
+
+                # 書き込み
+                if isHead:
+                    f.write(f'{tag}, {content}')
+                else:
+                    f.write(f'{content}, {tag}')
 
     def isLearning(self):
         return self.process and self.process.poll() is None
         
-    def exec(self, command, kohya_ss_folder):
+    def exec(self, command:str, kohya_ss_folder:str):
         if self.isLearning():
             return "learning"
         

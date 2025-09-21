@@ -211,7 +211,7 @@
     /*${listboxUI("module-type", "モジュールの種類", ["LoRA", "LyCORIS", "DyLoRA", "LoRA-FA"], ["--network_module 'networks.lora'", "--network_module 'lycoris.kohya'", "--network_module 'networks.dylora'", "--network_module 'networks.lora_fa'"])}*/
     setColumn("dataset-col-1-div",`
         ${headingUI("モデル")}
-        ${listboxUI("model-type", "モデルの種類", ["SD1", "SDXL", "FLUX.1", "SD3"], ["train_network.py", "sdxl_train_network.py", "flux_train_network.py", "sd3_train_network.py"], 1)}
+        ${listboxUI("model-type", "モデルの種類", ["SD1", "SDXL"], ["train_network.py", "sdxl_train_network.py"], 1)}
         ${numberUI("resolution", "解像度", 1024,1,64)}
         ${headingUI("LoRA")}
         ${numberUI("network_dim", "次元数（Rank）", 16,1,1)}
@@ -228,8 +228,8 @@
         ${headingUI("学習率")}
         ${numberUI("learning_rate", "学習率（LR）", 0.0001,1,0.00000001)}
         ${listboxUI("scheduler_type", "LR スケジューラー", 
-            ["cosine_with_restarts", "cosine", "linear", "polynomial", "constant", "constant_with_warmup", "inverse_sqrt", "cosine_with_min_lr", "warmup_stable_decay"], 
-            ["--lr_scheduler 'cosine_with_restarts'", "--lr_scheduler 'cosine'", "--lr_scheduler 'linear'", "--lr_scheduler 'polynomial'", "--lr_scheduler 'constant'", "--lr_scheduler 'constant_with_warmup'", "--lr_scheduler 'inverse_sqrt'", "--lr_scheduler 'cosine_with_min_lr'", "--lr_scheduler 'warmup_stable_decay'"])}
+            ["cosine_with_restarts", "constant", "constant_with_warmup"], 
+            ["--lr_scheduler 'cosine_with_restarts'", "--lr_scheduler 'constant'", "--lr_scheduler 'constant_with_warmup'"])}
         ${numberUI("lr_scheduler_num_cycles", "LR スケジューラのサイクル/<br/>polynomial の減衰", 4, 0.7)}
         ${numberUI("lr_warmup_steps", "LRウォームアップ<br/>ステップ数/比率", 0.0, 0.7)}
     `)

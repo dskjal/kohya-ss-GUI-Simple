@@ -57,16 +57,25 @@ class Api:
         if not text_files:
             return "フォルダが存在しないか、フォルダ内に .txt ファイルがありません"
         
+        processed_file_count = 0
         for file in text_files:
             with open(file, mode="r+", encoding="utf-8") as f:
                 content = f.read()
                 f.seek(0)
+
+                # すでにタグが存在するならスキップ
+                tags = [t.strip() for t in content.split(',')]
+                if tag in tags:
+                    continue
+                
+                processed_file_count += 1
+
                 if isHead:
                     f.write(f'{tag}, {content}')
                 else:
                     f.write(f'{content}, {tag}')
 
-        return f'{len(text_files)} 個のファイルが変更されました'
+        return f'{processed_file_count} 個のファイルが変更されました'
 
     def moveTag(self, folder:str, tag:str, isHead:bool=True):
         '''
@@ -89,14 +98,14 @@ class Api:
                 if tag in tags:
                     processed_file_count += 1
 
-                tags.remove(tag)
-                content = ', '.join(tags)
+                    tags.remove(tag)
+                    content = ', '.join(tags)
 
-                # 書き込み
-                if isHead:
-                    f.write(f'{tag}, {content}')
-                else:
-                    f.write(f'{content}, {tag}')
+                    # 書き込み
+                    if isHead:
+                        f.write(f'{tag}, {content}')
+                    else:
+                        f.write(f'{content}, {tag}')
 
         return f"{processed_file_count} 個のファイルが変更されました"
         

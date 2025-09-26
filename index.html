@@ -327,11 +327,9 @@
     `);
 
     setColumn("loss-noise-col-1-div", `
-        ${listboxUI("loss-method", "損失関数の種類", 
-            ["L2（デフォルト）", "smooth_l1"], 
-            ["--loss_type 'l2'", "--loss_type 'smooth_l1'"])}
-            ${checkboxUI("debiased_estimation", "Debiased Estimation", true)}
-        `);
+    ${checkboxUI("debiased_estimation", "Debiased Estimation", true)}
+    `);
+
     setColumn("loss-noise-col-2-div", `
         ${headingUI("v-pred", 0)}
         ${checkboxUI("v_parameterization", "v-parameterization", false)}
@@ -360,7 +358,7 @@
         /* 順番は  accelerate launch --num_cpu_threads_per_process 1 *_train_network.py ...引数  */
         [numCpuThreadsPerProcess, args] = findAndExtract(args, "--num_cpu_threads_per_process");
         [trainNetwork, args] = findAndExtract(args, "train_network.py");
-        const commandlineHeader = `accelerate launch ${numCpuThreadsPerProcess}${trainNetwork}--enable_bucket --save_model_as \"safetensors\" --caption_extension \".txt\" --network_module \"networks.lora\" `;
+        const commandlineHeader = `accelerate launch ${numCpuThreadsPerProcess}${trainNetwork}--enable_bucket --save_model_as \"safetensors\" --caption_extension \".txt\" --network_module \"networks.lora\" --loss_type \"l2\" `;
 
         /* 畳み込み学習 */
         [dim, args] = findAndExtract(args, "conv_dim");

@@ -3,7 +3,7 @@
 
 ## インストール
 シェルから以下のコマンドを実行。
-> python -m pip install webview
+> python -m pip install pywebview
 
 ## 起動
 run.py を実行。
